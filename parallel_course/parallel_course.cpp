@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 
 void input(int& t, int& n)
@@ -22,13 +23,19 @@ void input(int& t, int& n)
 
 std::vector<int> read_file(const std::string& path)
 {
-    std::ifstream infile(path);
+    std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
+    std::ifstream infile(str, std::ios_base::in);
 
     int temp;
     std::vector<int> result;
 
-    while (infile >> temp)
-        result.push_back(temp);
+    if (infile.is_open())
+    {
+        while (infile >> temp)
+            result.push_back(temp);
+
+        infile.close();
+    }
 
     return result;
 }
@@ -42,10 +49,10 @@ int main(int argc, char** argv)
     input(threads, number);
 
     std::vector<int> set = read_file("input.txt");
-    Random rnd;
+    /*Random rnd;
 
     for (auto i = 0; i < set.size(); ++i)
-        set[i] = rnd.returnRandom(100);
+        set[i] = rnd.returnRandom(100);*/
 
     Task13* task = new Task13(set, number, threads);
 
