@@ -1,13 +1,15 @@
 #include "Method.h"
-#include "Task13.h"
+#include "Task26.h"
 #include "Random.h"
 #include "Timer.h"
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
+#include <filesystem>
 
 
-void input(int& t, int& n)
+void input(int& t)
 {
     //std::cout << "Enter size of set: ";
     //std::cin >> s;
@@ -15,20 +17,28 @@ void input(int& t, int& n)
     std::cout << "Enter number of threads: ";
     std::cin >> t;
 
-    std::cout << "Enter number (q): ";
-    std::cin >> n;
+    //std::cout << "Enter number (q): ";
+    //std::cin >> n;
 }
 
 
 std::vector<int> read_file(const std::string& path)
 {
-    std::ifstream infile(path);
+    std::string str = std::filesystem::current_path().string() + "\\..\\Debug\\" + path;
+    std::ifstream infile(str, std::ios_base::in);
 
     int temp;
     std::vector<int> result;
 
-    while (infile >> temp)
-        result.push_back(temp);
+    if (infile.is_open())
+    {
+        while (infile >> temp)
+            result.push_back(temp);
+
+        infile.close();
+    }
+
+    std::sort(result.begin(), result.end());
 
     return result;
 }
@@ -37,17 +47,16 @@ std::vector<int> read_file(const std::string& path)
 int main(int argc, char** argv)
 {
     int threads;
-    int number;
     
-    input(threads, number);
+    input(threads);
 
     std::vector<int> set = read_file("input.txt");
-    Random rnd;
+    /*Random rnd;
 
     for (auto i = 0; i < set.size(); ++i)
-        set[i] = rnd.returnRandom(100);
+        set[i] = rnd.returnRandom(100);*/
 
-    Task13* task = new Task13(set, number, threads);
+    Task26* task = new Task26(set, threads);
 
     MethodHandler handler;
     

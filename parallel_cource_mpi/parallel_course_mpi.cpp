@@ -6,42 +6,51 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <filesystem>
+#include <algorithm>
+#include <numeric>
 
 int func(int x, int y, int q)
 {
 	return x * q + y;
 }
 
-void read_file(const std::string& path, int* set)
+void read_file(const std::string& path, int* set, int set_size)
 {
-	std::ifstream infile(path);
+	std::string str = std::filesystem::current_path().string() + "\\..\\Debug\\" + path;
+	std::ifstream infile(str, std::ios_base::in);
 
 	int temp;
 	int i = 0;
 	
-	while (infile >> temp)
-		set[i++] = temp;
+	if (infile.is_open())
+	{
+		while (infile >> temp)
+		{
+			if (i < set_size)
+				set[i++] = temp;
+		}
+
+		infile.close();
+	}
+
+	std::sort(set, set + set_size);
 }
 
-int getMaxPairResult(int* set, int start, int end, int number, int set_size)
+int getMaxPairResult(int* set, int start, int end, int set_size)
 {
-	int max = std::numeric_limits<int>::min();
+	int count = 0;
 
 	for (auto i = start; i < end && i < set_size; ++i)
 	{
-		for (auto j = 0; j < set_size; ++j)
+		for (auto j = i + 1; j < set_size; ++j)
 		{
-			if (i == j)
-				continue;
-
-			const int f = func(set[i], set[j], number);
-
-			if (f > max)
-				max = f;
+			if (std::gcd(set[i], 2 * set[j]) > 1)
+				++count;
 		}
 	}
 
-	return max;
+	return count;
 }
 
 int main(int argc, char** argv)
@@ -54,26 +63,26 @@ int main(int argc, char** argv)
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	int set_size = 100;
-	int number;
+	//int number;
 	if (rank == 0)
 	{
 		//std::cout << "Enter set size: ";
 		//std::cin >> set_size;
 
-		std::cout << "Enter number(q): ";
-		std::cin >> number;
+		/*std::cout << "Enter number(q): ";
+		std::cin >> number;*/
 		
 		for (auto i = 1; i < size; ++i)
 		{
 			MPI_Send(&set_size, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-			MPI_Send(&number, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+			//MPI_Send(&number, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 		}
 	}
 	else
 	{
 		MPI_Status status;
 		MPI_Recv(&set_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-		MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+		//MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
 	}
 
 	int* set = new int[set_size];
@@ -81,7 +90,7 @@ int main(int argc, char** argv)
 	Timer t1;
 	if (rank == 0)
 	{
-		read_file("input.txt", set);
+		read_file("input.txt", set, set_size);
 
 		//Random rnd;
 		//for (auto i = 0; i < set_size; ++i)
@@ -96,10 +105,10 @@ int main(int argc, char** argv)
 	const int start = rank * span;
 	const int end = (rank + 1) * span;
 
-	const int max = getMaxPairResult(set, start, end, number, set_size);
+	const int max = getMaxPairResult(set, start, end, set_size);
 
 	int result;
-	MPI_Reduce(&max, &result, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&max, &result, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	if (rank == 0)
 	{
