@@ -1,5 +1,5 @@
 #include "Method.h"
-#include "Task13.h"
+#include "Task1.h"
 #include "Random.h"
 #include "Timer.h"
 
@@ -8,16 +8,10 @@
 #include <filesystem>
 
 
-void input(int& t, int& n)
+void input(int& t)
 {
-    //std::cout << "Enter size of set: ";
-    //std::cin >> s;
-
     std::cout << "Enter number of threads: ";
     std::cin >> t;
-
-    std::cout << "Enter number (q): ";
-    std::cin >> n;
 }
 
 
@@ -44,17 +38,12 @@ std::vector<int> read_file(const std::string& path)
 int main(int argc, char** argv)
 {
     int threads;
-    int number;
     
-    input(threads, number);
+    input(threads);
 
     std::vector<int> set = read_file("input.txt");
-    /*Random rnd;
 
-    for (auto i = 0; i < set.size(); ++i)
-        set[i] = rnd.returnRandom(100);*/
-
-    Task13* task = new Task13(set, number, threads);
+    Task1* task = new Task1(set, threads);
 
     MethodHandler handler;
     

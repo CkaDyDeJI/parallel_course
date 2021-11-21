@@ -6,7 +6,7 @@
 void ThreadMethod::exec(Task* task)
 {
 	const int size = task->getSize();
-	const int threads = task->getThreadsNumber();
+	const int threads = (task->getThreadsNumber() > size) ? size : task->getThreadsNumber();
 
 	const int span = (size % threads == 0) ? (size / threads) : (size / threads + 1);
 
