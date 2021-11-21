@@ -11,20 +11,14 @@
 
 void input(int& t)
 {
-    //std::cout << "Enter size of set: ";
-    //std::cin >> s;
-
     std::cout << "Enter number of threads: ";
     std::cin >> t;
-
-    //std::cout << "Enter number (q): ";
-    //std::cin >> n;
 }
 
 
 std::vector<int> read_file(const std::string& path)
 {
-    std::string str = std::filesystem::current_path().string() + "\\..\\Debug\\" + path;
+    std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
     std::ifstream infile(str, std::ios_base::in);
 
     int temp;
@@ -51,10 +45,6 @@ int main(int argc, char** argv)
     input(threads);
 
     std::vector<int> set = read_file("input.txt");
-    /*Random rnd;
-
-    for (auto i = 0; i < set.size(); ++i)
-        set[i] = rnd.returnRandom(100);*/
 
     Task26* task = new Task26(set, threads);
 
