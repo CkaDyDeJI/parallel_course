@@ -10,9 +10,6 @@
 
 void input(int& t, int& n)
 {
-    //std::cout << "Enter size of set: ";
-    //std::cin >> s;
-
     std::cout << "Enter number of threads: ";
     std::cin >> t;
 
@@ -31,7 +28,7 @@ std::vector<int> read_file(const std::string& path)
 
     if (infile.is_open())
     {
-        while (infile >> temp)
+        while (infile >> temp) 
             result.push_back(temp);
 
         infile.close();
@@ -49,10 +46,6 @@ int main(int argc, char** argv)
     input(threads, number);
 
     std::vector<int> set = read_file("input.txt");
-    /*Random rnd;
-
-    for (auto i = 0; i < set.size(); ++i)
-        set[i] = rnd.returnRandom(100);*/
 
     Task13* task = new Task13(set, number, threads);
 

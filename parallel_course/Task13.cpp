@@ -7,6 +7,11 @@ static inline int func(int x, int y, int q)
 	return x * q + y;
 }
 
+static bool pair_compare(const std::pair<int, int>& a, const std::pair<int, int>& b, int number)
+{
+	return a.first * number + a.second < b.first* number + b.second;
+}
+
 Task13::Task13(std::vector<int> newSet, int num, int threads)
 	: Task(newSet.size(), threads),
       number(num),

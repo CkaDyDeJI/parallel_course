@@ -5,7 +5,9 @@ VisualStudioVersion = 17.0.31717.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "parallel_course", "parallel_course\parallel_course.vcxproj", "{7B57681D-0DC5-43C0-AD25-CDC1B2E43C66}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "parallel_cource_mpi", "parallel_cource_mpi\parallel_cource_mpi.vcxproj", "{111D6903-0FCF-49CB-BF63-1E37060682C0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "parallel_course_mpi", "parallel_cource_mpi\parallel_cource_mpi.vcxproj", "{111D6903-0FCF-49CB-BF63-1E37060682C0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unparallel_course", "unparallel_course\unparallel_course.vcxproj", "{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,14 @@ Global
 		{111D6903-0FCF-49CB-BF63-1E37060682C0}.Release|x64.Build.0 = Release|x64
 		{111D6903-0FCF-49CB-BF63-1E37060682C0}.Release|x86.ActiveCfg = Release|Win32
 		{111D6903-0FCF-49CB-BF63-1E37060682C0}.Release|x86.Build.0 = Release|Win32
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Debug|x64.ActiveCfg = Debug|x64
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Debug|x64.Build.0 = Debug|x64
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Debug|x86.ActiveCfg = Debug|Win32
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Debug|x86.Build.0 = Debug|Win32
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Release|x64.ActiveCfg = Release|x64
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Release|x64.Build.0 = Release|x64
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Release|x86.ActiveCfg = Release|Win32
+		{D7003B8D-0D10-46B7-97D4-E67BC4D66F81}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
