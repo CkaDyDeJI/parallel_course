@@ -147,7 +147,7 @@
     <ClCompile Include="OmpMethod.cpp" />
     <ClCompile Include="parallel_course.cpp" />
     <ClCompile Include="Random.cpp" />
-    <ClCompile Include="Task13.cpp" />
+    <ClCompile Include="Task29.cpp" />
     <ClCompile Include="ThreadMethod.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
@@ -156,7 +156,7 @@
     <ClInclude Include="OmpMethod.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Task.h" />
-    <ClInclude Include="Task13.h" />
+    <ClInclude Include="Task29.h" />
     <ClInclude Include="ThreadMethod.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>

@@ -1,29 +1,33 @@
 #include "Random.h"
 #include "Timer.h"
 
-#include <thread>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <vector>
 #include <filesystem>
+#include <string>
 
-int func(int x, int y, int q)
-{
-	return x * q + y;
-}
-
-std::vector<int> read_file(const std::string& path)
+std::vector<std::vector<int>> read_file(const std::string& path)
 {
 	std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
 	std::ifstream infile(str, std::ios_base::in);
 
-	int temp;
-	std::vector<int> result;
+	int count = 0;
+	std::string line;
+	std::vector<std::vector<int>> result(2);
 
 	if (infile.is_open())
 	{
-		while (infile >> temp)
-			result.push_back(temp);
+		for (int i = 0; i < 2; ++i)
+		{
+			std::getline(infile, line);
+			std::istringstream iss(line);
+
+			int temp;
+			while (iss >> temp)
+				result[i].push_back(temp);
+		}
 
 		infile.close();
 	}
@@ -31,57 +35,45 @@ std::vector<int> read_file(const std::string& path)
 	return result;
 }
 
-void getMaxPairResult(std::vector<int> set, int from, int to, int number, int& result)
+using ll = long long;
+
+int getMaxPairResult(const std::vector<int>& a, const std::vector<int>& b, int from, int to, int sum)
 {
-	int max = std::numeric_limits<int>::min();
+	std::vector<std::vector<ll>> dp(to);
+	for (int i = 0; i < dp.size(); ++i)
+		dp[i].resize(to);
 
-	for (auto i = from; i < to && i < set.size(); ++i)
-	{
-		for (auto j = 0; j < set.size(); ++j)
-		{
-			if (i == j)
-				continue;
+	ll res = 0;
 
-			const int f = func(set[i], set[j], number);
-
-			if (f > max)
-				max = f;
+	for (ll i = from; i < to; i++) {
+		for (ll j = i - 1; j >= 1; j--) {
+			dp[j][i] = dp[j + 1][i - 1] - b[j] * a[j] + b[j] * a[i] + b[i] * a[j] - b[i] * a[i];
+			res = std::max(res, dp[j][i]);
 		}
 	}
 
-	result = max;
+	return sum + res;
 }
 
 int main(int argc, char** argv)
 {
-	int threads = 4;
-	int number;
+	int sum = 0;
 
-	std::cout << "Threads: ";
-	std::cin >> threads;
+	auto tempVec = read_file("input.txt");
 
-	std::cout << "Enter number(q): ";
-	std::cin >> number;
+	auto set_a = tempVec[0];
+	auto set_b = tempVec[1];
 
-	auto set = read_file("input.txt");
+	for (int i = 0; i < tempVec[0].size(); ++i)
+		sum += set_a[i] * set_b[i];
+
 
 	Timer t1;
 	t1.start();
 
-	const int span = (set.size() % threads == 0) ? (set.size() / threads) : (set.size() / threads + 1);
+	const int max = getMaxPairResult(set_a, set_b, 0, set_a.size(), sum);
 
-	std::vector<std::thread> thrs;
-	std::vector<int> subArr(threads);
-
-	for (auto i = 0; i < threads; ++i)
-	{
-		thrs.push_back(std::thread(&getMaxPairResult, set, i * span, (i + 1) * span, number, std::ref(subArr[i])));
-	}
-
-	for (auto i = 0; i < thrs.size(); ++i)
-		thrs[i].join();
-
-	std::cout << "\nresult is: " << *std::max_element(subArr.begin(), subArr.end()) << "\ntime: " << t1.elapsed();
+	std::cout << "\nresult is: " << max << "\ntime: " << t1.elapsed();
 
 	return 0;
 }
