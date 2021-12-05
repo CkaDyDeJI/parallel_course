@@ -1,5 +1,5 @@
 #include "Method.h"
-#include "Task13.h"
+#include "Task23.h"
 #include "Random.h"
 #include "Timer.h"
 
@@ -8,13 +8,10 @@
 #include <filesystem>
 
 
-void input(int& t, int& n)
+void input(int& t)
 {
     std::cout << "Enter number of threads: ";
     std::cin >> t;
-
-    std::cout << "Enter number (q): ";
-    std::cin >> n;
 }
 
 
@@ -41,13 +38,12 @@ std::vector<int> read_file(const std::string& path)
 int main(int argc, char** argv)
 {
     int threads;
-    int number;
     
-    input(threads, number);
+    input(threads);
 
     std::vector<int> set = read_file("input.txt");
 
-    Task13* task = new Task13(set, number, threads);
+    Task23* task = new Task23(set, threads);
 
     MethodHandler handler;
     
