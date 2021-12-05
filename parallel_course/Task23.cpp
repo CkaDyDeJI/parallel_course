@@ -17,44 +17,38 @@ void Task23::runSubroutine(int from, int to)
 	if (to >= inputSet.size())
 		to = inputSet.size();
 
-	for (int k = from; k < to; ++k)
+	int k = from;
+
+	if (k > 0 && outputSet[k - 1] != 0)
+	{
+		int temp = outputSet[k - 1];
+		for (int i = 0; i < k - 1; ++i)
+			temp += inputSet[i] % inputSet[k - 1];
+
+		for (int j = 0; j < k; ++j)
+			temp += inputSet[k - 1] % inputSet[j];
+
+		outputSet[k] = temp;
+	}
+	else
 	{
 		int temp = 0;
-		if (k > 0 && outputSet[k - 1] != 0)
-		{
-			temp = outputSet[k - 1];
-			for (int i = 0; i < k; ++i)
-			{
-				if (i != k - 1)
-				{
-					temp += inputSet[i] % inputSet[k - 1];
-					continue;
-				}
-
-				for (int j = 0; j < k; ++j)
-				{
-					temp += inputSet[i] % inputSet[j];
-				}
-			}
-		}
-		else
-		{
-			for (int i = 0; i < k; ++i)
-			{
-				for (int j = 0; j < k; ++j)
-				{
-					temp += inputSet[i] % inputSet[j];
-				}
-			}
-		}
-
-		/*for (int i = 0; i < k; ++i)
+		for (int i = 0; i < k; ++i)
 		{
 			for (int j = 0; j < k; ++j)
-			{
 				temp += inputSet[i] % inputSet[j];
-			}
-		}*/
+		}
+		outputSet[k] = temp;
+	}
+
+	for (int k = from + 1; k < to; ++k)
+	{
+		int temp = outputSet[k - 1];
+		for (int i = 0; i < k - 1; ++i)
+			temp += inputSet[i] % inputSet[k - 1];
+
+		for (int j = 0; j < k; ++j)
+			temp += inputSet[k - 1] % inputSet[j];
 
 		outputSet[k] = temp;
 	}
