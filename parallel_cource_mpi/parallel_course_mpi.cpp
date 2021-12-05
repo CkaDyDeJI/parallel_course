@@ -3,28 +3,150 @@
 #include "Random.h"
 #include "Timer.h"
 
+#include <set>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <filesystem>
+#include <string>
 
-int func(int x, int y, int q)
+
+int rank;
+int size;
+int set_size;
+int result;
+int* set_x;
+int* set_y;
+int size_before;
+std::set<std::pair<int, int>> set;
+
+static inline int getClosestPowerOf2(int number)
 {
-	return x * q + y;
+	int p = 0;
+	while (true)
+	{
+		if (pow(number, p) > number)
+			return p;
+
+		p++;
+	}
 }
 
-std::vector<int> read_file(const std::string& path)
+void prepareRoutine(int from, int to)
+{
+	if (from >= set_size)
+		from = set_size - 1;
+
+	if (to >= set_size)
+		to = set_size - 1;
+
+	std::vector <std::pair<int, int>> p(to - from);
+	for (int i = from; i < to; ++i)
+	{
+		p[i - from].first = set_x[i];
+		p[i - from].second = set_y[i];
+	}
+
+	std::sort(p.begin() + from, p.begin() + to);
+
+	for (int i = from; i < to; ++i)
+	{
+		set_x[i] = p[i - from].first;
+		set_y[i] = p[i - from].second;
+	}
+}
+
+void f(int l, int r, int level, int level_to)
+{
+	if (level >= level_to)
+		return;
+
+	if (r - l < 2)
+		return;
+
+	int m = l + r >> 1;
+
+	for (int i = l; i < r; i++)
+		set.insert({ set_x[m], set_y[i] });
+
+	f(l, m, ++level, level_to);
+	f(m, r, ++level, level_to);
+}
+
+void f(int l, int r)
+{
+	if (r - l < 2)
+		return;
+
+	int m = l + r >> 1;
+
+	for (int i = l; i < r; i++)
+		set.insert({ set_x[m], set_y[i] });
+
+	f(l, m);
+	f(m, r);
+}
+
+int joinPrepare(int* x, int* y)
+{
+	std::vector <std::pair<int, int>> p(set_size);
+	for (int i = 0; i < set_size; ++i)
+	{
+		p[i].first = x[i];
+		p[i].second = y[i];
+	}
+
+	std::sort(p.begin(), p.end());
+
+	for (int i = 0; i < set_size; ++i)
+	{
+		x[i] = p[i].first;
+		y[i] = p[i].second;
+	}
+
+	const int newThreads = getClosestPowerOf2(size);
+	f(0, p.size(), 0, newThreads);
+
+	return newThreads;
+}
+
+void runSubroutine(int from, int to)
+{
+	if (from >= set_size)
+		from = set_size - 1;
+
+	if (to >= set_size)
+		to = set_size - 1;
+
+	f(from, to);
+}
+
+void join()
+{
+	result = set.size();
+}
+
+std::vector<std::pair<int, int>> read_file(const std::string& path)
 {
 	std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
 	std::ifstream infile(str, std::ios_base::in);
 
-	int temp;
-	std::vector<int> result;
-	
+	std::vector<std::pair<int, int>> result;
+
 	if (infile.is_open())
 	{
-		while (infile >> temp)
-			result.push_back(temp);
+		std::string line;
+
+		while (std::getline(infile, line))
+		{
+			std::istringstream iss(line);
+
+			int temp1, temp2;
+			while (iss >> temp1 && iss >> temp2)
+				result.push_back({ temp1, temp2 });
+		}
+
 
 		infile.close();
 	}
@@ -32,65 +154,43 @@ std::vector<int> read_file(const std::string& path)
 	return result;
 }
 
-int getMaxPairResult(int* set, int start, int end, int number, int set_size)
-{
-	int max = std::numeric_limits<int>::min();
-
-	for (auto i = start; i < end && i < set_size; ++i)
-	{
-		for (auto j = 0; j < set_size; ++j)
-		{
-			if (i == j)
-				continue;
-
-			const int f = func(set[i], set[j], number);
-
-			if (f > max)
-				max = f;
-		}
-	}
-
-	return max;
-}
 
 int main(int argc, char** argv)
 {
-	int rank;
-	int size;
-
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	int* set;
-	int set_size;
-	int number;
 	if (rank == 0)
 	{
-		std::cout << "Enter number(q): ";
-		std::cin >> number;
-
 		auto tempVec = read_file("input.txt");
 		
 		set_size = tempVec.size();
-		set = new int[set_size];
 
-		std::copy(tempVec.begin(), tempVec.end(), set);
+		set_x = new int[set_size];
+		set_y = new int[set_size];
+
+		for (int i = 0; i < tempVec.size(); ++i)
+		{
+			set_x[i] = tempVec[i].first;
+			set_y[i] = tempVec[i].second;
+		}
 		
 		for (auto i = 1; i < size; ++i)
 		{
 			MPI_Send(&set_size, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-			MPI_Send(&number, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 		}
 	}
 	else
 	{
 		MPI_Status status;
 		MPI_Recv(&set_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-		MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
 
-		set = new int[set_size];
+		set_x = new int[set_size];
+		set_y = new int[set_size];
 	}
+
+	std::cout << set_size << std::endl;
 
 	Timer t1;
 	if (rank == 0)
@@ -98,23 +198,37 @@ int main(int argc, char** argv)
 		t1.start();
 	}
 
-	MPI_Bcast(set, set_size, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(set_x, set_size, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(set_y, set_size, MPI_INT, 0, MPI_COMM_WORLD);
 
 	const int span = (set_size % size == 0) ? (set_size / size) : (set_size / size + 1);
 	const int start = rank * span;
 	const int end = (rank + 1) * span;
 
-	const int max = getMaxPairResult(set, start, end, number, set_size);
+	prepareRoutine(rank * span, (rank + 1) * span);
 
-	int result;
-	MPI_Reduce(&max, &result, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+	const int newThreads = joinPrepare(set_x, set_y);
+	const int newSpan = (set_size % newThreads == 0) ? (set_size / newThreads) : (set_size / newThreads + 1);
+
+	if (rank == 0)
+		size_before = set.size();
+
+	if (rank < newThreads)
+	{
+		runSubroutine(rank * newSpan, (rank + 1) * newSpan);
+	}
+	
+	int final_result;
+	MPI_Reduce(&result, &final_result, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
 
 	if (rank == 0)
 	{
-		std::cout << "\nresult is: " << result << "\ntime: " << t1.elapsed();
+		final_result -= size * size_before;
+		std::cout << "\nresult is: " << final_result << "\ntime: " << t1.elapsed();
 	}
 
-	delete[] set;
+	delete[] set_x;
+	delete[] set_y;
 
 	MPI_Finalize();
 

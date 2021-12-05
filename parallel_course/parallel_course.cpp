@@ -1,35 +1,42 @@
 #include "Method.h"
-#include "Task13.h"
+#include "Task18.h"
 #include "Random.h"
 #include "Timer.h"
 
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <sstream>
+#include <string>
 
 
-void input(int& t, int& n)
+void input(int& t)
 {
     std::cout << "Enter number of threads: ";
     std::cin >> t;
-
-    std::cout << "Enter number (q): ";
-    std::cin >> n;
 }
 
 
-std::vector<int> read_file(const std::string& path)
+std::vector<std::pair<int, int>> read_file(const std::string& path)
 {
     std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
     std::ifstream infile(str, std::ios_base::in);
 
-    int temp;
-    std::vector<int> result;
+    std::vector<std::pair<int, int>> result;
 
     if (infile.is_open())
     {
-        while (infile >> temp) 
-            result.push_back(temp);
+        std::string line;
+
+        while (std::getline(infile, line)) 
+        {
+            std::istringstream iss(line);
+
+            int temp1, temp2;
+            while (iss >> temp1 && iss >> temp2)
+                result.push_back({ temp1, temp2 });
+        }
+        
 
         infile.close();
     }
@@ -41,13 +48,12 @@ std::vector<int> read_file(const std::string& path)
 int main(int argc, char** argv)
 {
     int threads;
-    int number;
     
-    input(threads, number);
+    input(threads);
 
-    std::vector<int> set = read_file("input.txt");
+    auto set = read_file("input.txt");
 
-    Task13* task = new Task13(set, number, threads);
+    Task18* task = new Task18(set, threads);
 
     MethodHandler handler;
     

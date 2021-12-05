@@ -14,7 +14,16 @@ void OmpMethod::exec(Task* task)
 	#pragma omp parallel for
 	for (auto i = 0; i < threads; ++i)
 	{
-		task->runSubroutine(i * span, (i + 1) * span, i);
+		task->prepareRoutine(i * span, (i + 1) * span);
+	}
+
+	const int newThreads = task->joinPrepare();
+	const int newSpan = (size % newThreads == 0) ? (size / newThreads) : (size / newThreads + 1);
+
+	#pragma omp parallel for
+	for (auto i = 0; i < newThreads; ++i)
+	{
+		task->runSubroutine(i * newSpan, (i + 1) * newSpan, i);
 	}
 
 	task->join();
