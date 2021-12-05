@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <utility>
 
 class Task
@@ -7,7 +8,7 @@ class Task
 public:
     Task(int newSize, int newThreads) { size = newSize; threads = newThreads; }
 
-    virtual void runSubroutine(int from, int to, int thread) = 0;
+    virtual void runSubroutine(int from, int to) = 0;
 	virtual void join() = 0;
 
 	int getSize() { return size; }

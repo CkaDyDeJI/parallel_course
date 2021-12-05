@@ -9,7 +9,7 @@ Task23::Task23(std::vector<int> newSet, int threads)
 {
 }
 
-void Task23::runSubroutine(int from, int to, int thread)
+void Task23::runSubroutine(int from, int to)
 {
 	if (from >= inputSet.size())
 		from = inputSet.size();
@@ -20,13 +20,41 @@ void Task23::runSubroutine(int from, int to, int thread)
 	for (int k = from; k < to; ++k)
 	{
 		int temp = 0;
-		for (int i = 0; i < k; ++i)
+		if (k > 0 && outputSet[k - 1] != 0)
+		{
+			temp = outputSet[k - 1];
+			for (int i = 0; i < k; ++i)
+			{
+				if (i != k - 1)
+				{
+					temp += inputSet[i] % inputSet[k - 1];
+					continue;
+				}
+
+				for (int j = 0; j < k; ++j)
+				{
+					temp += inputSet[i] % inputSet[j];
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < k; ++i)
+			{
+				for (int j = 0; j < k; ++j)
+				{
+					temp += inputSet[i] % inputSet[j];
+				}
+			}
+		}
+
+		/*for (int i = 0; i < k; ++i)
 		{
 			for (int j = 0; j < k; ++j)
 			{
 				temp += inputSet[i] % inputSet[j];
 			}
-		}
+		}*/
 
 		outputSet[k] = temp;
 	}
@@ -37,7 +65,7 @@ void Task23::join()
 	return;
 }
 
-std::string Task23::getResult() const
+std::string Task23::getResult()
 {
 	std::string out = "";
 
@@ -46,5 +74,8 @@ std::string Task23::getResult() const
 		out += std::format("p{} = {}\n", i + 1, outputSet[i]);
 	}
 	
+	outputSet.clear();
+	outputSet = std::vector<int>(inputSet.size());
+
 	return out;
 }
