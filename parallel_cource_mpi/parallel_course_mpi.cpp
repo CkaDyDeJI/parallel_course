@@ -8,11 +8,6 @@
 #include <vector>
 #include <filesystem>
 
-int func(int x, int y, int q)
-{
-	return x * q + y;
-}
-
 std::vector<int> read_file(const std::string& path)
 {
 	std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
@@ -32,25 +27,34 @@ std::vector<int> read_file(const std::string& path)
 	return result;
 }
 
-int getMaxPairResult(int* set, int start, int end, int number, int set_size)
+void getMaxPairResult(int* inputSet, int* outputSet, int from, int to, int set_size)
 {
-	int max = std::numeric_limits<int>::min();
+	if (from >= set_size)
+		from = set_size;
 
-	for (auto i = start; i < end && i < set_size; ++i)
+	if (to >= set_size)
+		to = set_size;
+
+	int k = from;
+	int temp = 0;
+	for (int i = 0; i < k; ++i)
 	{
-		for (auto j = 0; j < set_size; ++j)
-		{
-			if (i == j)
-				continue;
-
-			const int f = func(set[i], set[j], number);
-
-			if (f > max)
-				max = f;
-		}
+		for (int j = 0; j < k; ++j)
+			temp += inputSet[i] % inputSet[j];
 	}
+	outputSet[k - from] = temp;
 
-	return max;
+	for (int k = from + 1; k < to; ++k)
+	{
+		int temp = outputSet[k - from - 1];
+		for (int i = 0; i < k - 1; ++i)
+			temp += inputSet[i] % inputSet[k - 1];
+
+		for (int j = 0; j < k; ++j)
+			temp += inputSet[k - 1] % inputSet[j];
+
+		outputSet[k - from] = temp;
+	}
 }
 
 int main(int argc, char** argv)
@@ -62,34 +66,28 @@ int main(int argc, char** argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	int* set;
+	int* inputSet;
 	int set_size;
-	int number;
 	if (rank == 0)
 	{
-		std::cout << "Enter number(q): ";
-		std::cin >> number;
-
 		auto tempVec = read_file("input.txt");
 		
 		set_size = tempVec.size();
-		set = new int[set_size];
+		inputSet = new int[set_size];
 
-		std::copy(tempVec.begin(), tempVec.end(), set);
+		std::copy(tempVec.begin(), tempVec.end(), inputSet);
 		
 		for (auto i = 1; i < size; ++i)
 		{
 			MPI_Send(&set_size, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-			MPI_Send(&number, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 		}
 	}
 	else
 	{
 		MPI_Status status;
 		MPI_Recv(&set_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-		MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
 
-		set = new int[set_size];
+		inputSet = new int[set_size];
 	}
 
 	Timer t1;
@@ -98,23 +96,65 @@ int main(int argc, char** argv)
 		t1.start();
 	}
 
-	MPI_Bcast(set, set_size, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(inputSet, set_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-	const int span = (set_size % size == 0) ? (set_size / size) : (set_size / size + 1);
-	const int start = rank * span;
-	const int end = (rank + 1) * span;
+	int span = (set_size / size);
+	int start = rank * span;
+	int end = (rank + 1) * span;
 
-	const int max = getMaxPairResult(set, start, end, number, set_size);
+	int* dipls = new int[size];
+	int* rcounts = new int[size];
+	if (rank == 0)
+	{
+		for (int i = 0; i < size; ++i)
+		{
+			dipls[i] = span * i;
+			rcounts[i] = span;
 
-	int result;
-	MPI_Reduce(&max, &result, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+			if (i == size - 1)
+			{
+				dipls[i] = i * span;
+				rcounts[i] = set_size - i * span;
+			}
+
+			std::cout << dipls[i] << "  " << rcounts[i] << std::endl;
+		}
+	}
+
+	if (rank == size - 1)
+	{
+		start = rank * span;
+		end = set_size;
+		span = set_size - rank * span;
+	}
+
+	int* outputSet = new int[span];
+
+	getMaxPairResult(inputSet, outputSet, start, end, set_size);
+
+	int* result = nullptr;
+	if (rank == 0)
+	{
+		result = new int[set_size];
+	} 
+
+	MPI_Gatherv(outputSet, span, MPI_INT, result, rcounts, dipls, MPI_INT, 0, MPI_COMM_WORLD);
 
 	if (rank == 0)
 	{
-		std::cout << "\nresult is: " << result << "\ntime: " << t1.elapsed();
+		std::string out = "";
+
+		for (int i = 0; i < set_size; ++i)
+		{
+			out += std::format("p{} = {}\n", i + 1, result[i]);
+		}
+
+		std::cout << "\nresult is: " << out << "\ntime: " << t1.elapsed();
 	}
 
-	delete[] set;
+	delete[] inputSet;
+	delete[] outputSet;
+	delete[] result;
 
 	MPI_Finalize();
 

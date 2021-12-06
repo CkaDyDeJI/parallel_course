@@ -53,7 +53,8 @@ int main(int argc, char** argv)
     t1.start();
     method_exec->exec(task);
 
-    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << t1.elapsed();
+    auto time1 = t1.elapsed();
+    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << time1;
 
     method_exec = handler.getMethod(METHOD::THREAD);
     
@@ -61,7 +62,8 @@ int main(int argc, char** argv)
     t2.start();
     method_exec->exec(task);
 
-    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << t2.elapsed();
+    auto time2 = t2.elapsed();
+    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << time2;
 
     return 0;
 }
