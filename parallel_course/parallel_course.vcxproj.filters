@@ -27,21 +27,18 @@
     <ClCompile Include="Method.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Task13.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Random.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Task19.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Method.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThreadMethod.h">
@@ -50,13 +47,13 @@
     <ClInclude Include="OmpMethod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Task13.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Task19.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
