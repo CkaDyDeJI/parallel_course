@@ -13,7 +13,7 @@ public:
 	int getSize() { return size; }
     int getThreadsNumber() { return threads; }
 
-private:
+protected:
 	int size;
 	int threads;
 };
