@@ -1,5 +1,4 @@
-#include "Method.h"
-#include "Task13.h"
+#include "Task16.h"
 #include "Random.h"
 #include "Timer.h"
 
@@ -7,65 +6,72 @@
 #include <fstream>
 #include <filesystem>
 
+#include <thread>
 
-void input(int& t, int& n)
+void input(int& t)
 {
     std::cout << "Enter number of threads: ";
     std::cin >> t;
 
-    std::cout << "Enter number (q): ";
-    std::cin >> n;
+    /*std::cout << "Enter first string: ";
+    std::cin >> first;
+
+    std::cout << "Enter second string: ";
+    std::cin >> second;*/
 }
 
 
-std::vector<int> read_file(const std::string& path)
+void read_file(const std::string& path, std::string& s1, std::string& s2)
 {
     std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
     std::ifstream infile(str, std::ios_base::in);
 
-    int temp;
-    std::vector<int> result;
-
     if (infile.is_open())
     {
-        while (infile >> temp) 
-            result.push_back(temp);
+        infile >> s1;
+        infile >> s2;
 
         infile.close();
     }
-
-    return result;
 }
 
 
 int main(int argc, char** argv)
 {
     int threads;
-    int number;
+    std::string s1;
+    std::string s2;
     
-    input(threads, number);
+    input(threads);
 
-    std::vector<int> set = read_file("input.txt");
+    read_file("input.txt", s1, s2);
 
-    Task13* task = new Task13(set, number, threads);
+    Task16 task1(threads);
+    Task16 task2(threads);
 
-    MethodHandler handler;
-    
-    Method* method_exec = handler.getMethod(METHOD::OMP);
+    std::string res1;
+    std::string res2;
+
+    //Timer t2;
+    //t2.start();
+
+    ///*task1.altThread(s1, 0, res1);
+    //task2.altThread(s2, 0, res2);*/
+
+    //res1 = task1.runOmp(s1, 0);
+    //res2 = task2.runOmp(s2, 0);
+
+    //std::cout << (res1 == res2) << "\ntime: " << t2.elapsed();
 
     Timer t1;
     t1.start();
-    method_exec->exec(task);
 
-    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << t1.elapsed();
+    res1 = task1.altOmp(s1, 1);
+    res2 = task2.altOmp(s2, 1);
 
-    method_exec = handler.getMethod(METHOD::THREAD);
+    std::cout << (res1 == res2) << "\ntime: " << t1.elapsed();
     
-    Timer t2;
-    t2.start();
-    method_exec->exec(task);
-
-    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << t2.elapsed();
+    
 
     return 0;
 }

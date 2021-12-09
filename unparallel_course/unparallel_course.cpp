@@ -7,81 +7,42 @@
 #include <vector>
 #include <filesystem>
 
-int func(int x, int y, int q)
+const std::string H(std::string a)
 {
-	return x * q + y;
+	int n = a.length();
+	if (n % 2)
+		return a;
+
+	const std::string k = H(a.substr(0, n / 2));
+	const std::string l = H(a.substr(n / 2));
+
+	return std::min(k + l, l + k);
 }
 
-std::vector<int> read_file(const std::string& path)
+void read_file(const std::string& path, std::string& s1, std::string& s2)
 {
 	std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
 	std::ifstream infile(str, std::ios_base::in);
 
-	int temp;
-	std::vector<int> result;
-
 	if (infile.is_open())
 	{
-		while (infile >> temp)
-			result.push_back(temp);
+		infile >> s1;
+		infile >> s2;
 
 		infile.close();
 	}
-
-	return result;
-}
-
-void getMaxPairResult(std::vector<int> set, int from, int to, int number, int& result)
-{
-	int max = std::numeric_limits<int>::min();
-
-	for (auto i = from; i < to && i < set.size(); ++i)
-	{
-		for (auto j = 0; j < set.size(); ++j)
-		{
-			if (i == j)
-				continue;
-
-			const int f = func(set[i], set[j], number);
-
-			if (f > max)
-				max = f;
-		}
-	}
-
-	result = max;
 }
 
 int main(int argc, char** argv)
 {
-	int threads = 4;
-	int number;
+	std::string x, y;
 
-	std::cout << "Threads: ";
-	std::cin >> threads;
-
-	std::cout << "Enter number(q): ";
-	std::cin >> number;
-
-	auto set = read_file("input.txt");
+	read_file("input.txt", x, y);
 
 	Timer t1;
 	t1.start();
 
-	const int span = (set.size() % threads == 0) ? (set.size() / threads) : (set.size() / threads + 1);
-
-	std::vector<std::thread> thrs;
-	std::vector<int> subArr(threads);
-
-	for (auto i = 0; i < threads; ++i)
-	{
-		thrs.push_back(std::thread(&getMaxPairResult, set, i * span, (i + 1) * span, number, std::ref(subArr[i])));
-	}
-
-	for (auto i = 0; i < thrs.size(); ++i)
-		thrs[i].join();
-
-	std::cout << "\nresult is: " << *std::max_element(subArr.begin(), subArr.end()) << "\ntime: " << t1.elapsed();
+	std::cout << (H(x) == H(y) ? "YES" : "NO") << "\ntime = " << t1.elapsed();
 
 	return 0;
 }
