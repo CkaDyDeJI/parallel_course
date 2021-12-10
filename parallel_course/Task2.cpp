@@ -3,33 +3,45 @@
 #include <thread>
 #include "omp.h"
 
-Task2::Task2(int* a, int size, int threads)
-	: size(size),
+int sum [35010 << 2];
+int lazy [35010 << 2];
+int f [35010];
+int g [35010];
+int pre [35010];
+int last [35010];
+
+#define mid (l+r)/2
+
+Task2::Task2(int* a, int n, int k, int threads)
+	: set(a),
+	  n(n),
+      k(k),
 	  threads(threads),
 	  result(0)
 {
-	set = new int[35010];
-	sum = new int[35010 << 2];
-	lazy = new int[35010 << 2];
-	f = new int[35010];
-	g = new int[35010];
-	pre = new int[35010];
-	last = new int[35010];
+	//set = new int[35010];
+	//sum = new int[35010 << 2];
+	//lazy = new int[35010 << 2];
+	//f = new int[35010];
+	//g = new int[35010];
+	//pre = new int[35010];
+	//last = new int[35010];
 
-	memcpy(set, a, 35010);
+	//set = a;
+	//memcpy(set, a, 35010);
 
 	prepare();
 }
 
 Task2::~Task2()
 {
-	delete[] set;
-	delete[] sum;
-	delete[] lazy;
-	delete[] f;
-	delete[] g;
-	delete[] pre;
-	delete[] last;
+	//delete[] set;
+	//delete[] sum;
+	//delete[] lazy;
+	//delete[] f;
+	//delete[] g;
+	//delete[] pre;
+	//delete[] last;
 }
 
 void Task2::run(Type type)
@@ -52,7 +64,7 @@ void Task2::build(int now, int l, int r)
 	if (l == r)
 		return;
 
-	const int mid = (l + r) / 2;
+	//const int mid = (l + r) / 2;
 	build(now << 1, l, mid);
 	build(now << 1 | 1, mid + 1, r);
 }
@@ -66,7 +78,7 @@ void Task2::update(int now, int l, int r, int L, int R, int v)
 		return;
 	}
 
-	const int mid = (l + r) / 2;
+	//const int mid = (l + r) / 2;
 	if (L <= mid)
 		update(now << 1, l, mid, L, R, v);
 
@@ -78,63 +90,123 @@ void Task2::update(int now, int l, int r, int L, int R, int v)
 
 int Task2::getResult() const
 {
-	return f[size];
+	return f[n];
 }
 
 void Task2::runOmp()
 {
 	omp_set_num_threads(threads);
 
-	#pragma omp parallel for
-	for (int i = 0; i < threads; i++)
+	#pragma omp parallel for ordered schedule(static)
+	for (int i = 1; i <= k; i++)
 	{
-		threadTask();
+		#pragma omp ordered
+		build(1, 0, n);
+
+		#pragma omp ordered
+		for (int j = 1; j <= n; j++)
+		{
+			//thread
+			//#pragma omp
+			update(1, 0, n, j - 1, j - 1, f[j - 1] - 1e9);
+
+			if (pre[j]) //thread
+				update(1, 0, n, 0, pre[j] - 1, j - pre[j]);
+
+			g[j] = sum[1];
+		}
+
+		#pragma omp ordered
+		memcpy(f, g, sizeof(f));
 	}
 }
 
 void Task2::runThread()
 {
-	std::vector <std::thread> ths(threads);
-
-	for (int i = 0; i < threads; ++i)
-	{
-		ths[i] = std::move(std::thread(&Task2::threadTask, this));
-	}
-
-	for (int i = 0; i < threads; ++i)
-		ths[i].join();
+	
 }
 
 void Task2::runMpi()
 {
 }
 
-void Task2::threadTask()
+void Task2::buildOmp(int now, int l, int r, int level)
 {
-	build(1, 0, size);
+	sum[now] = 1e9;
+	lazy[now] = 0;
 
-	for (int j = 1; j <= size; j++)
+	if (l == r)
+		return;
+
+	if (level < threads)
 	{
-		update(1, 0, size, j - 1, j - 1, f[j - 1] - 1e9);
+		#pragma omp parallel for
+		for (int i = 0; i < 2; ++i)
+		{
+			if (i == 0)
+				buildOmp(now << 1, l, mid, level << 1 + 1);			
+			else
+				buildOmp(now << 1, l, mid, level << 1 + 2);
+		}
+	}
+	else
+	{
+		build(now << 1, l, mid);
+		build(now << 1 | 1, mid + 1, r);
+	}
+}
 
-		if (pre[j])
-			update(1, 0, size, 0, pre[j] - 1, j - pre[j]);
+void Task2::buildThread(int now, int l, int r)
+{
+}
 
-		g[j] = sum[1];
+void Task2::updateOmp(int now, int l, int r, int L, int R, int v, int level)
+{
+	if (L <= l && r <= R)
+	{
+		lazy[now] += v;
+		sum[now] += v;
+		return;
 	}
 
-	memcpy(f, g, sizeof(f));
+	if (level < threads)
+	{
+		#pragma omp parallel for
+		for (int i = 0; i < 2; ++i)
+		{
+			if (i == 0 && L <= mid)
+				updateOmp(now << 1, l, mid, L, R, v, level << 1 + 1);
+
+			if (i == 1 && R > mid)
+				updateOmp(now << 1 | 1, mid + 1, r, L, R, v, level << 1 + 2);
+		}
+	}
+	else
+	{
+		if (L <= mid)
+			update(now << 1, l, mid, L, R, v);
+
+		if (R > mid)
+			update(now << 1 | 1, mid + 1, r, L, R, v);
+	}
+
+	sum[now] = std::min(sum[now << 1], sum[now << 1 | 1]) + lazy[now];
+}
+
+void Task2::updateThread(int now, int l, int r, int L, int R, int v)
+{
 }
 
 void Task2::prepare()
 {
-	for (int i = 1; i <= size; ++i)
+	for (int i = 1; i <= n; ++i)
 	{
 		pre[i] = last[set[i]];
 		last[set[i]] = i;
 	}
 
-	for (int i = 1; i <= size; ++i)
+	//memset(f, 1e9, n);
+	for (int i = 1; i <= n; ++i)
 		f[i] = 1e9;
 }
 

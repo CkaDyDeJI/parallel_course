@@ -1,5 +1,4 @@
-#pragma once
-#include "Task.h"
+﻿#pragma once
 
 #include <vector>
 
@@ -13,7 +12,7 @@ enum class Type
 class Task2
 {
 public:
-	Task2(int* a, int size, int threads);
+	Task2(int* a, int n, int k, int threads);
 	~Task2();
 	void run(Type type);
 
@@ -24,7 +23,13 @@ private:
 	void runThread();
 	void runMpi();
 
-	void threadTask();
+	void buildOmp(int now, int l, int r, int level);
+	void buildThread(int now, int l, int r);
+	//void buildMpi(int now, int l, int r);
+
+	void updateOmp(int now, int l, int r, int L, int R, int v, int level);
+	void updateThread(int now, int l, int r, int L, int R, int v);
+	//void updateMpi(int now, int l, int r, int L, int R, int v);
 
 	void prepare();
 	void build(int now, int l, int r);
@@ -33,14 +38,9 @@ private:
 	int calc(int l, int r, int L, int R, int& sum);
 
 	int* set;
-	int* sum;
-	int* lazy;
-	int* f;
-	int* g;
-	int* pre;
-	int* last;
 	
-	int size;
+	int n;
+	int k;
 	int threads;
 	int result;
 };
