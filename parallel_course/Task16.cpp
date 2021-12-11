@@ -7,7 +7,7 @@
 Task16::Task16(int threads)
 	: threads(threads)
 {
-	//omp_set_num_threads(threads);
+	omp_set_num_threads(threads);
 }
 
 const std::string Task16::altOmp(const std::string& str, int level) const
@@ -21,13 +21,12 @@ const std::string Task16::altOmp(const std::string& str, int level) const
 
 	if (level < threads)
 	{
-		#pragma omp parallel for
-		for (int i = 0; i < 2; ++i)
+		#pragma omp parallel
 		{
-			if (i == 0)
-				k = altOmp(str.substr(0, n >> 1), level * 2 + 1);
-			else
-				l = altOmp(str.substr(n >> 1), level * 2 + 2);
+			#pragma omp task
+						k = altOmp(str.substr(0, n >> 1), level << 1 + 1);
+			#pragma omp task
+						l = altOmp(str.substr(n >> 1), level << 1 + 2);
 		}
 	}
 	else

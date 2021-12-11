@@ -11,8 +11,9 @@ public:
 	void altThread(const std::string& str1, int level, std::string& res) const;
 	const std::string runThread(const std::string& str1, int level) const;
 
-private:
 	const std::string task(const std::string& s) const;
+
+private:
 	void taskThread(const std::string& s, std::string& res) const;
 
 	const int threads;
