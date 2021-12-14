@@ -1,77 +1,84 @@
 #include "Task16.h"
-#include "Random.h"
 #include "Timer.h"
 
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <mpi.h>
 
-#include <thread>
+const int MAX_N = 50000;
+char A[MAX_N + 10], B[MAX_N + 10];
 
 void input(int& t)
 {
-    std::cout << "Enter number of threads: ";
-    std::cin >> t;
-
-    /*std::cout << "Enter first string: ";
-    std::cin >> first;
-
-    std::cout << "Enter second string: ";
-    std::cin >> second;*/
+    t = 4;
+    // std::cout << "Enter number of threads: ";
+    // std::cin >> t;
 }
 
-
-void read_file(const std::string& path, std::string& s1, std::string& s2)
+void read_file(const std::string& path)
 {
-    std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
+    const std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
     std::ifstream infile(str, std::ios_base::in);
 
     if (infile.is_open())
     {
-        infile >> s1;
-        infile >> s2;
+        infile >> A;
+        infile >> B;
 
         infile.close();
     }
+}
+
+void launch_method(int threads, Type type)
+{
+    read_file("input.txt");
+
+    Task16 task1(threads);
+    Task16 task2(threads);
+
+    const auto len = strlen(A + 1);
+
+    Timer t;
+    t.start();
+    
+    task1.run(type, A, 1, len);
+    task2.run(type, B, 1, len);
+
+    std::string result;
+    if (strcmp(A, B) == 0)
+        result = "NO";
+    else
+        result = "YES";
+
+    const auto time = t.elapsed();
+
+    std::cout << "\nresult = " << result << "\ntime = " << time << std::endl;
 }
 
 
 int main(int argc, char** argv)
 {
     int threads;
-    std::string s1;
-    std::string s2;
-    
     input(threads);
-
-    read_file("input.txt", s1, s2);
-
-    Task16 task1(threads);
-    Task16 task2(threads);
-
-    std::string res1;
-    std::string res2;
-
-    //Timer t2;
-    //t2.start();
-
-    ///*task1.altThread(s1, 0, res1);
-    //task2.altThread(s2, 0, res2);*/
-
-    //res1 = task1.runOmp(s1, 0);
-    //res2 = task2.runOmp(s2, 0);
-
-    //std::cout << (res1 == res2) << "\ntime: " << t2.elapsed();
-
-    Timer t1;
-    t1.start();
-
-    res1 = task1.altOmp(s1, 1);
-    res2 = task2.altOmp(s2, 1);
-
-    std::cout << (res1 == res2) << "\ntime: " << t1.elapsed();
     
-    
+    {
+        launch_method(threads, Type::THREAD);
+    }
+
+    //////////
+
+    {
+        launch_method(threads, Type::OMP);
+    }
+
+    //////////
+
+    {
+        MPI_Init(&argc, &argv);
+        launch_method(threads, Type::MPI);
+        MPI_Finalize();
+    }
 
     return 0;
 }
