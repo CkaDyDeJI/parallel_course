@@ -63,8 +63,8 @@ int main(int argc, char** argv)
     
     /*Timer t2;
     t2.start();
-    method_exec->exec(task);
 
+    Task2 task2
     std::cout << "\nresult is: " << task->getResult() << "\ntime: " << t2.elapsed();*/
 
     return 0;

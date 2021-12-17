@@ -24,11 +24,11 @@ private:
 	void runMpi();
 
 	void buildOmp(int now, int l, int r, int level);
-	void buildThread(int now, int l, int r);
+	void buildThread(int now, int l, int r, int level);
 	//void buildMpi(int now, int l, int r);
 
 	void updateOmp(int now, int l, int r, int L, int R, int v, int level);
-	void updateThread(int now, int l, int r, int L, int R, int v);
+	void updateThread(int now, int l, int r, int L, int R, int v, int level);
 	//void updateMpi(int now, int l, int r, int L, int R, int v);
 
 	void prepare();
