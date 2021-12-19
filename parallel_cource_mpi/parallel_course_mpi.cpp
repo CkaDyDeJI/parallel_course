@@ -1,6 +1,5 @@
 ﻿#include "mpi.h"
 
-#include "Random.h"
 #include "Timer.h"
 
 #include <iostream>
@@ -8,49 +7,62 @@
 #include <vector>
 #include <filesystem>
 
-int func(int x, int y, int q)
-{
-	return x * q + y;
-}
+#define mid (l+r)/2
 
-std::vector<int> read_file(const std::string& path)
+int a[35010];
+int sum[35010 << 2];
+int lazy[35010 << 2];
+int f[35010];
+int g[35010];
+int pre[35010];
+int last[35010];
+
+
+void read_file(const std::string& path)
 {
 	std::string str = std::filesystem::current_path().string() + "\\..\\" + path;
 	std::ifstream infile(str, std::ios_base::in);
 
-	int temp;
-	std::vector<int> result;
-	
 	if (infile.is_open())
 	{
-		while (infile >> temp)
-			result.push_back(temp);
+		int count = 1;
+		while (infile >> a[count])
+		{
+			++count;
+		}
 
 		infile.close();
 	}
-
-	return result;
 }
 
-int getMaxPairResult(int* set, int start, int end, int number, int set_size)
+void build(int now, int l, int r)
 {
-	int max = std::numeric_limits<int>::min();
+	sum[now] = 1e9;
+	lazy[now] = 0;
 
-	for (auto i = start; i < end && i < set_size; ++i)
+	if (l == r)
+		return;
+
+	build(now << 1, l, mid);
+	build(now << 1 | 1, mid + 1, r);
+}
+
+void update(int now, int l, int r, int L, int R, int v)
+{
+	if (L <= l && r <= R)
 	{
-		for (auto j = 0; j < set_size; ++j)
-		{
-			if (i == j)
-				continue;
-
-			const int f = func(set[i], set[j], number);
-
-			if (f > max)
-				max = f;
-		}
+		lazy[now] += v;
+		sum[now] += v;
+		return;
 	}
 
-	return max;
+	if (L <= mid)
+		update(now << 1, l, mid, L, R, v);
+
+	if (R > mid)
+		update(now << 1 | 1, mid + 1, r, L, R, v);
+
+	sum[now] = std::min(sum[now << 1], sum[now << 1 | 1]) + lazy[now];
 }
 
 int main(int argc, char** argv)

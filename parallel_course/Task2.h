@@ -2,6 +2,24 @@
 
 #include <vector>
 
+struct exchange
+{
+	int now;
+	int l;
+	int r;
+	int L;
+	int R;
+	int v;
+
+	int c;
+	int p;
+
+	void sendToChild(int to);
+	void sendToParent();
+	void getFromChild(int from);
+	void getFromParent();
+};
+
 enum class Type
 {
 	OMP,
@@ -23,19 +41,21 @@ private:
 	void runThread();
 	void runMpi();
 
+	void mpiParent();
+	
+
 	void buildOmp(int now, int l, int r, int level);
 	void buildThread(int now, int l, int r, int level);
 	//void buildMpi(int now, int l, int r);
 
 	void updateOmp(int now, int l, int r, int L, int R, int v, int level);
 	void updateThread(int now, int l, int r, int L, int R, int v, int level);
-	//void updateMpi(int now, int l, int r, int L, int R, int v);
+	void updateMpi(int now, int l, int r, int L, int R, int v, int level);
+	void updateMpiChild(int rank);
 
 	void prepare();
 	void build(int now, int l, int r);
 	void update(int now, int l, int r, int L, int R, int v);
-	void solve(int l, int r, int L, int R, int now);
-	int calc(int l, int r, int L, int R, int& sum);
 
 	int* set;
 	
