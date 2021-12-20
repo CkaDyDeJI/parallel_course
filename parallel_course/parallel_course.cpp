@@ -1,5 +1,4 @@
 #include "Method.h"
-#include "Task13.h"
 #include "Random.h"
 #include "Timer.h"
 
@@ -7,14 +6,13 @@
 #include <fstream>
 #include <filesystem>
 
+#include "Task4.h"
 
-void input(int& t, int& n)
+
+void input(int& t)
 {
     std::cout << "Enter number of threads: ";
     std::cin >> t;
-
-    std::cout << "Enter number (q): ";
-    std::cin >> n;
 }
 
 
@@ -41,31 +39,30 @@ std::vector<int> read_file(const std::string& path)
 int main(int argc, char** argv)
 {
     int threads;
-    int number;
     
-    input(threads, number);
+    input(threads);
 
     std::vector<int> set = read_file("input.txt");
 
-    Task13* task = new Task13(set, number, threads);
-
     MethodHandler handler;
-    
+
+    Task4* task1 = new Task4(set, threads);
     Method* method_exec = handler.getMethod(METHOD::OMP);
 
     Timer t1;
     t1.start();
-    method_exec->exec(task);
+    method_exec->exec(task1);
 
-    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << t1.elapsed();
+    std::cout << "\nresult is: " << task1->getResult() << "\ntime: " << t1.elapsed();
 
+    Task4* task2 = new Task4(set, threads);
     method_exec = handler.getMethod(METHOD::THREAD);
     
     Timer t2;
     t2.start();
-    method_exec->exec(task);
+    method_exec->exec(task2);
 
-    std::cout << "\nresult is: " << task->getResult() << "\ntime: " << t2.elapsed();
+    std::cout << "\nresult is: " << task2->getResult() << "\ntime: " << t2.elapsed();
 
     return 0;
 }

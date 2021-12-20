@@ -18,17 +18,11 @@
     <ClCompile Include="parallel_course_mpi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\parallel_course\Random.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\parallel_course\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\parallel_course\Random.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\parallel_course\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

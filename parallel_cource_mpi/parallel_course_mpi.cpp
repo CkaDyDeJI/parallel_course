@@ -1,17 +1,11 @@
 ﻿#include "mpi.h"
 
-#include "Random.h"
 #include "Timer.h"
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <filesystem>
-
-int func(int x, int y, int q)
-{
-	return x * q + y;
-}
 
 std::vector<int> read_file(const std::string& path)
 {
@@ -32,25 +26,42 @@ std::vector<int> read_file(const std::string& path)
 	return result;
 }
 
-int getMaxPairResult(int* set, int start, int end, int number, int set_size)
+int getMaxPairResult(int* set, int start, int end, int set_size)
 {
-	int max = std::numeric_limits<int>::min();
+	if (start >= set_size)
+		start = set_size;
+	if (end >= set_size)
+		end = set_size;
 
+	int ss = 0;
+	int s = 0;
 	for (auto i = start; i < end && i < set_size; ++i)
 	{
-		for (auto j = 0; j < set_size; ++j)
+		s = 0;
+		for (int j = i + 2; j < set_size; ++j)
 		{
-			if (i == j)
-				continue;
+			s += set[j - 1];
 
-			const int f = func(set[i], set[j], number);
+			if (s >= 2 * set[i])
+				break;
 
-			if (f > max)
-				max = f;
+			if ((set[i] ^ set[j]) == s && set[i] >= set[j])
+				++ss;
+		}
+
+		s = 0;
+		for (int j = i - 2; j >= 0; --j) {
+			s += set[j + 1];
+
+			if (s >= 2 * set[i])
+				break;
+
+			if ((set[i] ^ set[j]) == s && set[i] > set[j])
+				ss++;
 		}
 	}
 
-	return max;
+	return ss;
 }
 
 int main(int argc, char** argv)
@@ -64,12 +75,8 @@ int main(int argc, char** argv)
 
 	int* set;
 	int set_size;
-	int number;
 	if (rank == 0)
 	{
-		std::cout << "Enter number(q): ";
-		std::cin >> number;
-
 		auto tempVec = read_file("input.txt");
 		
 		set_size = tempVec.size();
@@ -80,14 +87,12 @@ int main(int argc, char** argv)
 		for (auto i = 1; i < size; ++i)
 		{
 			MPI_Send(&set_size, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-			MPI_Send(&number, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 		}
 	}
 	else
 	{
 		MPI_Status status;
 		MPI_Recv(&set_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-		MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
 
 		set = new int[set_size];
 	}
@@ -104,10 +109,10 @@ int main(int argc, char** argv)
 	const int start = rank * span;
 	const int end = (rank + 1) * span;
 
-	const int max = getMaxPairResult(set, start, end, number, set_size);
+	const int max = getMaxPairResult(set, start, end, set_size);
 
 	int result;
-	MPI_Reduce(&max, &result, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&max, &result, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	if (rank == 0)
 	{
