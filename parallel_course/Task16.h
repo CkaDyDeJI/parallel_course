@@ -1,5 +1,9 @@
 #pragma once
 
+class MpiMethod;
+class ThreadMethod;
+class OmpMethod;
+
 enum class Type
 {
 	OMP,
@@ -7,25 +11,15 @@ enum class Type
 	MPI
 };
 
-struct exchange
-{
-    char* str;
-    int l;    int r;
-    int c;    int p;
-
-    void sendToChild(int to) const;
-    void sendToParent() const;
-    void getFromChild(int from) const;
-    void getFromParent();
-};
-
 class Task16
 {
 public:
 	Task16(int threads);
-	void run(Type type, char* str, const int& l, const int& r, int argc = 0, char** argv = nullptr) const;
+	void run(Type type, char* str, const int& l, const int& r) const;
 
 private:
-	const int threads;
+	MpiMethod* mpi_;
+	ThreadMethod* thread_;
+	OmpMethod* omp_;
 };
 

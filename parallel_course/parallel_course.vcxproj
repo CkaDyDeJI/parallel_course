@@ -138,7 +138,6 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OpenMPSupport>true</OpenMPSupport>
-      <AdditionalOptions>/openmp:llvm /openmp:experimental %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Microsoft MPI\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -151,14 +150,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MpiMethod.cpp" />
+    <ClCompile Include="OmpMethod.cpp" />
     <ClCompile Include="parallel_course.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="Task16.cpp" />
+    <ClCompile Include="ThreadMethod.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Method.h" />
+    <ClInclude Include="MpiMethod.h" />
+    <ClInclude Include="OmpMethod.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="Task16.h" />
+    <ClInclude Include="ThreadMethod.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
