@@ -65,8 +65,6 @@ static inline void mpiChild(int rank, int threads)
 	{
 		work(str, l, mid);
 		work(str, mid + 1, r);
-
-		data.sendToParent();
 	}
 	else
 	{
@@ -121,7 +119,7 @@ static inline void mpiParent(char* str, const int& l, const int& r, int rank, in
 
 	const int mid = (l + r) >> 1;
 
-	if (rank * 2 < threads && threads != 1)
+	if (rank * 2 + 2 < threads && threads != 1)
 	{
 		const int to1 = rank * 2 + 1;
 		const int to2 = rank * 2 + 2;

@@ -39,7 +39,7 @@ void OmpMethod::workOmp(char* str, const int& l, const int& r, int level) const
 
 	if (level * 2 < threads)
 	{
-		#pragma omp parallel for
+		#pragma omp parallel for num_threads(2)
 		for (int i = 0; i < 2; ++i)
 		{
 			if (i == 0)
@@ -73,7 +73,7 @@ void OmpMethod::workOmp(char* str, const int& l, const int& r, int level) const
 
 OmpMethod::OmpMethod(int th) : Method(th)
 {
-	omp_set_num_threads(th);
+	// omp_set_num_threads(th);
 }
 
 void OmpMethod::run(char* str, const int& l, const int& r) const

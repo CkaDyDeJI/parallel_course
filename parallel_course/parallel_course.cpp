@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <mpi.h>
 
-const int MAX_N = 50000;
+const int MAX_N = 268435456;
 char A[MAX_N + 10], B[MAX_N + 10];
 char A_copy[MAX_N + 10], B_copy[MAX_N + 10];
 
@@ -18,7 +18,7 @@ void input(int& t)
 
 void read_file(const std::string& path)
 {
-    const std::string str = std::filesystem::current_path().string() + path;
+    const std::string str = std::filesystem::current_path().string() + "\\" + path;
     std::ifstream infile(str, std::ios_base::in);
 
     if (infile.is_open())
@@ -32,7 +32,7 @@ void read_file(const std::string& path)
 
 void launch_method(Task16* tsk1, Task16* tsk2, int threads, Type type)
 {
-    const auto len = strlen(A + 1);
+    const auto len = strlen(A);
 
     Timer t;
     t.start();
@@ -95,6 +95,7 @@ int main(int argc, char** argv)
     }
 
     //////////
+    
     if (size != 1)
     {
         std::cout << "Mpi";
