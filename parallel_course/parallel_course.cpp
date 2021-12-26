@@ -18,10 +18,8 @@ void input(int& n, int& k, int& t)
 
     std::cout << "Enter number of threads: ";
     std::cin >> t;
-
-    /*for (int i = 1; i <= n; ++i)
-        std::cin >> a[i];*/
 }
+
 void read_file(const std::string& path)
 {
     std::string str = std::filesystem::current_path().string() + "\\..\\" + path;

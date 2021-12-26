@@ -153,12 +153,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="parallel_course.cpp" />
-    <ClCompile Include="Random.cpp" />
     <ClCompile Include="Task2.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Random.h" />
     <ClInclude Include="Task2.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>

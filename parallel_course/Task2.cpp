@@ -1,6 +1,9 @@
 #include "Task2.h"
 
 #include <future>
+#include <iostream>
+#include <ostream>
+
 #include "mpi.h"
 #include "omp.h"
 
@@ -15,6 +18,7 @@ int last [35010];
 
 void exchange::sendToChild(int to)
 {
+	std::cout << to << std::endl;
 	MPI_Send(sum, 35010 << 2, MPI_INT, to, to, MPI_COMM_WORLD);
 	MPI_Send(lazy, 35010 << 2, MPI_INT, to, to, MPI_COMM_WORLD);
 	MPI_Send(f, 35010, MPI_INT, to, to, MPI_COMM_WORLD);
@@ -119,6 +123,7 @@ void Task2::update(int now, int l, int r, int L, int R, int v)
 	{
 		lazy[now] += v;
 		sum[now] += v;
+
 		return;
 	}
 	
@@ -206,10 +211,10 @@ void Task2::mpiParent()
 
 		for (int j = 1; j <= n; j++)
 		{
-			updateMpi(1, 0, n, j - 1, j - 1, f[j - 1] - 1e9, 1);
+			updateMpi(1, 0, n, j - 1, j - 1, f[j - 1] - 1e9, 0);
 
 			if (pre[j])
-				updateMpi(1, 0, n, 0, pre[j] - 1, j - pre[j], 1);
+				updateMpi(1, 0, n, 0, pre[j] - 1, j - pre[j], 0);
 
 			g[j] = sum[1];
 		}
@@ -238,11 +243,15 @@ void Task2::updateMpiChild(int rank)
 	{
 		lazy[now] += v;
 		sum[now] += v;
+
+		data.sendToParent();
+
 		return;
 	}
 
 	if (rank * 2 + 2 < threads)
 	{
+		std::cout << "[[eq" << std::endl;
 		const int to1 = rank * 2 + 1;
 		const int to2 = rank * 2 + 2;
 
@@ -282,7 +291,6 @@ void Task2::updateMpiChild(int rank)
 		if (R > mid)
 		{
 			data2.getFromChild(to2);
-
 		}
 	}
 	else
@@ -428,8 +436,9 @@ void Task2::updateMpi(int now, int l, int r, int L, int R, int v, int level)
 		return;
 	}
 
-	if (level * 2 < threads && threads != 1)
+	if (level * 2 + 2 <= threads && threads != 1)
 	{
+		// std::cout << level << std::endl;
 		const int to1 = level * 2 + 1;
 		const int to2 = level * 2 + 2;
 		
