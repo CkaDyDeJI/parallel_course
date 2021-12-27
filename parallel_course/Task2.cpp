@@ -14,6 +14,8 @@ int g [35010];
 int pre [35010];
 int last [35010];
 
+#define nextLvl (level * 2 + 2)
+
 #define mid (l+r)/2
 
 void exchange::sendToChild(int to)
@@ -144,14 +146,11 @@ int Task2::getResult() const
 void Task2::runOmp()
 {
 	omp_set_num_threads(threads);
-
-	// #pragma omp parallel for ordered schedule(static)
+	
 	for (int i = 1; i <= k; i++)
 	{
-		// #pragma omp ordered
-		build(1, 0, n);
+		buildOmp(1, 0, n, 1);
 
-		// #pragma omp ordered
 		for (int j = 1; j <= n; j++)
 		{
 			updateOmp(1, 0, n, j - 1, j - 1, f[j - 1] - 1e9, 1);
@@ -161,8 +160,7 @@ void Task2::runOmp()
 
 			g[j] = sum[1];
 		}
-
-		// #pragma omp ordered
+		
 		memcpy(f, g, sizeof(f));
 	}
 }
@@ -171,7 +169,7 @@ void Task2::runThread()
 {	
 	for (int i = 1; i <= k; i++)
 	{
-		build(1, 0, n);
+		buildThread(1, 0, n, 1);
 
 		for (int j = 1; j <= n; j++)
 		{
@@ -315,7 +313,7 @@ void Task2::buildOmp(int now, int l, int r, int level)
 	if (l == r)
 		return;
 
-	if (level < threads)
+	if (nextLvl < threads)
 	{
 		#pragma omp parallel for
 		for (int i = 0; i < 2; ++i)
@@ -323,7 +321,7 @@ void Task2::buildOmp(int now, int l, int r, int level)
 			if (i == 0)
 				buildOmp(now << 1, l, mid, (level << 1) + 1);			
 			else
-				buildOmp(now << 1, l, mid, (level << 1) + 2);
+				buildOmp(now << 1, mid + 1, r, (level << 1) + 2);
 		}
 	}
 	else
@@ -341,10 +339,10 @@ void Task2::buildThread(int now, int l, int r, int level)
 	if (l == r)
 		return;
 
-	if (level * 2 < threads)
+	if (nextLvl <= threads)
 	{
 		auto fut1 = std::async(&Task2::buildThread, this, now << 1, l, mid, (level << 1) + 1);
-		auto fut2 = std::async(&Task2::buildThread, this, now << 1, l, mid, (level << 1) + 2);
+		auto fut2 = std::async(&Task2::buildThread, this, now << 1, mid + 1, r, (level << 1) + 2);
 
 		fut1.wait();
 		fut2.wait();
@@ -365,7 +363,7 @@ void Task2::updateOmp(int now, int l, int r, int L, int R, int v, int level)
 		return;
 	}
 
-	if (level < threads)
+	if (nextLvl <= threads)
 	{
 		#pragma omp parallel for
 		for (int i = 0; i < 2; ++i)
@@ -398,7 +396,7 @@ void Task2::updateThread(int now, int l, int r, int L, int R, int v, int level)
 		return;
 	}
 
-	if (level < threads)
+	if (nextLvl <= threads)
 	{
 		std::future<void> fut1;
 		std::future<void> fut2;
@@ -413,7 +411,6 @@ void Task2::updateThread(int now, int l, int r, int L, int R, int v, int level)
 			fut1.wait();
 		if (R > mid)
 			fut2.wait();
-
 	}
 	else
 	{
@@ -436,9 +433,8 @@ void Task2::updateMpi(int now, int l, int r, int L, int R, int v, int level)
 		return;
 	}
 
-	if (level * 2 + 2 <= threads && threads != 1)
+	if (nextLvl <= threads && threads != 1)
 	{
-		// std::cout << level << std::endl;
 		const int to1 = level * 2 + 1;
 		const int to2 = level * 2 + 2;
 		
